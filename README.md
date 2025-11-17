@@ -21,22 +21,43 @@ AutoAnnotate-TimeSeries automatically clusters and organizes unlabeled time seri
 - 🔌 **Python API**: Full programmatic control
 
 ## 🚀 Installation
+
+### Quick Install (Recommended)
 ```bash
-pip install autoannotate-timeseries
+# Clone repository
+git clone https://github.com/Metamind-Innovations/autoannotate-timeseries.git
+cd autoannotate-timeseries
+
+# Install core package
+pip install -e .
+
+# Install Chronos model (required)
+pip install git+https://github.com/amazon-science/chronos-forecasting.git
 ```
 
-Or from source:
+### Alternative: Using requirements.txt
 ```bash
 git clone https://github.com/Metamind-Innovations/autoannotate-timeseries.git
 cd autoannotate-timeseries
+pip install -r requirements.txt
 pip install -e .
 ```
 
 ### Optional Dependencies
 ```bash
-pip install autoannotate-timeseries[hdbscan]
-pip install autoannotate-timeseries[advanced]
+# For HDBSCAN clustering
+pip install hdbscan
+
+# For development tools
+pip install -e .[dev]
 ```
+
+## ⚠️ Important Notes
+
+- **Chronos model** must be installed separately from GitHub
+- Requires Git installed on your system
+- First-time installation may take 3-5 minutes
+- Requires ~500MB disk space for model weights
 
 ## 📝 Input Data Format
 

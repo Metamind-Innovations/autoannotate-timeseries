@@ -47,6 +47,7 @@ dependencies = [
     "plotly>=5.0.0",
 ]
 
+[project.optional-dependencies]
 dev = [
     "pytest>=7.0.0",
     "pytest-cov>=4.0.0",
@@ -59,12 +60,6 @@ docs = [
     "mkdocs>=1.4.0",
     "mkdocs-material>=9.0.0",
     "mkdocstrings[python]>=0.20.0",
-]
-hdbscan = [
-    "hdbscan>=0.8.29",
-]
-advanced = [
-    "gluonts>=0.14.0",
 ]
 
 [project.scripts]

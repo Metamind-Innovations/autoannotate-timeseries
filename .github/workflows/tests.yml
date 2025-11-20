@@ -1,28 +1,55 @@
 name: Tests
 
-on: [push, pull_request]
+on:
+  push:
+    branches: [ main, dev ]
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        python-version: ['3.9', '3.10', '3.11']
-    
+        os: [ ubuntu-latest, macos-latest, windows-latest ]
+        python-version: [ '3.10', '3.11', '3.12', '3.13' ]
+
     steps:
-    - uses: actions/checkout@v3
-    
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
-      with:
-        python-version: ${{ matrix.python-version }}
-    
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -e .
-        pip install pytest pytest-cov
-    
-    - name: Run tests (without Chronos)
-      run: |
-        pytest tests/ -v --cov=autoannotate -k "not embedding" || echo "Tests completed with warnings"
+      - uses: actions/checkout@v3
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+          pip install git+https://github.com/amazon-science/chronos-forecasting.git
+
+      - name: Lint with flake8
+        run: |
+          flake8 src/autoannotate --count --select=E9,F63,F7,F82 --show-source --statistics
+          flake8 src/autoannotate --count --exit-zero --statistics --max-line-length=100 --extend-ignore=E203,W503 --max-complexity=10
+
+      - name: Check formatting with black
+        run: |
+          black --check src/autoannotate tests
+
+      - name: Type check with mypy
+        run: |
+          mypy src/autoannotate --ignore-missing-imports
+        continue-on-error: true
+
+      - name: Run tests with pytest
+        run: |
+          pytest tests/ -v --cov=autoannotate --cov-report=xml --cov-report=term
+        continue-on-error: true
+
+      - name: Test CLI command
+        run: |
+          autoannotate-ts-cli --help
+
+      - name: Test GUI command entry point
+        run: |
+          python -c "from autoannotate.ui.gui import main; print('GUI entry point imports successfully')"
+        continue-on-error: true

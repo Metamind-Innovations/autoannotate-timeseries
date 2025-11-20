@@ -1,40 +1,42 @@
 [build-system]
-requires = ["setuptools>=65.0.0", "wheel"]
+requires = ["setuptools>=80.9.0", "wheel>=0.45.1"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "autoannotate-timeseries"
-version = "0.1.0"
+version = "0.0.1"
 description = "SOTA unsupervised auto-annotation SDK for time series classification"
 readme = "README.md"
-requires-python = ">=3.8"
-license = {file = "LICENSE"}
+requires-python = ">=3.10, <3.14"
+license = { file = "LICENSE" }
 authors = [
-    {name = "MetaMind Innovations", email = "research@metamind-innovations.com"}
+    { name = "MetaMind Innovations", email = "info@metamind.gr" }
 ]
 keywords = [
     "time-series",
-    "clustering", 
+    "clustering",
     "auto-labeling",
     "machine-learning",
     "forecasting"
 ]
 classifiers = [
-    "Development Status :: 4 - Beta",
+    "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
     "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
     "Topic :: Scientific/Engineering :: Information Analysis",
 ]
 
 dependencies = [
-    "numpy>=1.21.0",
-    "pandas>=1.3.0",
+    "numpy>=2.0.0",
+    "pandas>=2.2.2",
     "torch>=2.0.0",
     "transformers>=4.30.0",
     "scikit-learn>=1.0.0",
@@ -42,9 +44,9 @@ dependencies = [
     "click>=8.0.0",
     "tqdm>=4.65.0",
     "rich>=13.0.0",
-    "pydantic>=2.0.0",
     "pyarrow>=10.0.0",
     "plotly>=5.0.0",
+    "chronos-forecasting @ git+https://github.com/amazon-science/chronos-forecasting.git",
 ]
 
 [project.optional-dependencies]
@@ -61,15 +63,18 @@ docs = [
     "mkdocs-material>=9.0.0",
     "mkdocstrings[python]>=0.20.0",
 ]
+hdbscan = [
+    "hdbscan>=0.8.29",
+]
 
 [project.scripts]
-autoannotate-ts = "autoannotate.ui.cli:main"
+autoannotate-ts-cli = "autoannotate.ui.cli:main"
+autoannotate-ts = "autoannotate.ui.gui:main"
 
 [project.urls]
 Homepage = "https://github.com/metamind-innovations/autoannotate-timeseries"
-Documentation = "https://autoannotate-timeseries.readthedocs.io"
-Repository = "https://github.com/metamind-innovations/autoannotate-timeseries"
-"Bug Tracker" = "https://github.com/metamind-innovations/autoannotate-timeseries/issues"
+Documentation = "https://github.com/Metamind-Innovations/autoannotate-timeseries/blob/main/README.md"
+Issues = "https://github.com/Metamind-Innovations/autoannotate-timeseries/issues"
 
 [tool.setuptools.packages.find]
 where = ["src"]
@@ -79,7 +84,7 @@ autoannotate = ["py.typed"]
 
 [tool.black]
 line-length = 100
-target-version = ['py38', 'py39', 'py310', 'py311']
+target-version = ['py310', 'py311', 'py312', 'py313']
 include = '\.pyi?$'
 
 [tool.pytest.ini_options]
@@ -90,7 +95,8 @@ python_functions = ["test_*"]
 addopts = "-v --cov=autoannotate --cov-report=term-missing"
 
 [tool.mypy]
-python_version = "3.8"
+python_version = "3.10"
 warn_return_any = true
 warn_unused_configs = true
 ignore_missing_imports = true
+no_implicit_optional = true

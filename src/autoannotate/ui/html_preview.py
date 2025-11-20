@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 import webbrowser
 import numpy as np
 import json
@@ -11,7 +11,7 @@ def generate_cluster_preview_html(
     series_names: List[str],
     indices: np.ndarray,
     cluster_size: int,
-    output_path: Path = None,
+    output_path: Optional[Path] = None,
 ) -> Path:
 
     if output_path is None:
@@ -21,10 +21,7 @@ def generate_cluster_preview_html(
     for idx in indices:
         series = timeseries_list[idx]
         name = series_names[idx]
-        series_data.append({
-            "name": name,
-            "values": series.tolist()
-        })
+        series_data.append({"name": name, "values": series.tolist()})
 
     html_content = f"""
     <!DOCTYPE html>
@@ -111,11 +108,12 @@ def generate_cluster_preview_html(
                 👁️ Showing Representative Samples: <strong>{len(indices)}</strong>
             </div>
         </div>
-        
+
         <div class="instruction">
-            <strong>📝 Instructions:</strong> Review these sample time series and return to the terminal to enter a class name for this cluster.
+            <strong>📝 Instructions:</strong> Review these sample time series and return to
+            the terminal to enter a class name for this cluster.
         </div>
-        
+
         <div class="gallery">
     """
 
@@ -136,7 +134,7 @@ def generate_cluster_preview_html(
     """
 
     for idx, series_info in enumerate(series_data, 1):
-        values_json = json.dumps(series_info['values'])
+        values_json = json.dumps(series_info["values"])
         html_content += f"""
             {{
                 const data = {values_json};
@@ -147,7 +145,7 @@ def generate_cluster_preview_html(
                     line: {{color: '#667eea', width: 2}},
                     name: '{series_info['name']}'
                 }};
-                
+
                 const layout = {{
                     margin: {{l: 50, r: 30, t: 30, b: 40}},
                     paper_bgcolor: 'rgba(255,255,255,0.9)',
@@ -156,7 +154,7 @@ def generate_cluster_preview_html(
                     yaxis: {{title: 'Value', gridcolor: '#e0e0e0'}},
                     showlegend: false
                 }};
-                
+
                 Plotly.newPlot('plot{idx}', [trace], layout, {{responsive: true}});
             }}
         """

@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, Literal, cast
 import numpy as np
 import pandas as pd
 
@@ -8,9 +8,6 @@ from autoannotate.core.clustering import ClusteringEngine
 from autoannotate.core.organizer import DatasetOrganizer
 from autoannotate.ui.interactive import InteractiveLabelingSession
 from autoannotate.utils.timeseries_loader import TimeSeriesLoader
-from autoannotate.config import DEFAULT_CONFIG
-
-__version__ = "0.1.0"
 
 
 class AutoAnnotator:
@@ -37,24 +34,21 @@ class AutoAnnotator:
         self.context_length = context_length
         self.timestamp_column = timestamp_column
 
-        self.timeseries_list = None
-        self.series_names = None
-        self.original_df = None
-        self.embeddings = None
-        self.labels = None
-        self.cluster_stats = None
+        self.timeseries_list: Optional[List[np.ndarray]] = None
+        self.series_names: Optional[List[str]] = None
+        self.original_df: Optional[pd.DataFrame] = None
+        self.embeddings: Optional[np.ndarray] = None
+        self.labels: Optional[np.ndarray] = None
+        self.cluster_stats: Optional[Dict] = None
 
-        self.loader = TimeSeriesLoader(
-            self.input_file,
-            timestamp_column=self.timestamp_column
-        )
+        self.loader = TimeSeriesLoader(self.input_file, timestamp_column=self.timestamp_column)
         self.extractor = EmbeddingExtractor(
-            model_name=self.model_name,
+            model_name=cast(Literal["chronos-t5-tiny", "chronos-t5-small"], self.model_name),
             batch_size=self.batch_size,
             context_length=self.context_length,
         )
         self.clusterer = ClusteringEngine(
-            method=self.clustering_method,
+            method=cast(Literal["kmeans", "hdbscan", "spectral", "dbscan"], self.clustering_method),
             n_clusters=self.n_clusters,
             reduce_dims=self.reduce_dims,
         )
@@ -94,12 +88,19 @@ class AutoAnnotator:
         if self.series_names is None or self.labels is None:
             raise ValueError("Load time series and run clustering first")
 
+        assert self.timeseries_list is not None
+        assert self.cluster_stats is not None
+
         session = InteractiveLabelingSession()
         session.display_cluster_stats(self.cluster_stats)
 
         representatives = self.get_representative_indices(n_samples)
         class_names = session.label_all_clusters_by_names(
-            self.timeseries_list, self.series_names, self.labels, representatives, self.cluster_stats
+            self.timeseries_list,
+            self.series_names,
+            self.labels,
+            representatives,
+            self.cluster_stats,
         )
 
         session.display_labeling_summary(class_names, self.labels)
@@ -114,7 +115,7 @@ class AutoAnnotator:
             self.series_names,
             self.labels,
             class_names,
-            timestamp_column=self.loader.timestamp_column
+            timestamp_column=self.loader.timestamp_column,
         )
 
     def create_splits(
@@ -146,6 +147,7 @@ class AutoAnnotator:
         if create_splits:
             self.create_splits()
 
+        assert self.timeseries_list is not None
         return {
             "n_timeseries": len(self.timeseries_list),
             "n_clusters": len(class_names),

@@ -1,6 +1,8 @@
 import click
 from pathlib import Path
 import logging
+from typing import Literal, cast
+from importlib.metadata import version
 from rich.console import Console
 from rich.logging import RichHandler
 
@@ -21,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 
 @click.group()
-@click.version_option(version="0.1.0")
+@click.version_option(version=version("autoannotate-timeseries"))
 def cli():
     pass
 
@@ -60,7 +62,10 @@ def cli():
     help="Export labels format",
 )
 @click.option(
-    "--timestamp-column", type=str, default=None, help="Name of timestamp column (auto-detected if not specified)"
+    "--timestamp-column",
+    type=str,
+    default=None,
+    help="Name of timestamp column (auto-detected if not specified)",
 )
 @click.option(
     "--context-length", type=int, default=512, help="Context length for time series models"
@@ -80,7 +85,9 @@ def annotate(
     context_length: int,
 ):
     try:
-        console.print("[bold blue]AutoAnnotate-TimeSeries[/bold blue] - SOTA Time Series Auto-Annotation\n")
+        console.print(
+            "[bold blue]AutoAnnotate-TimeSeries[/bold blue] - SOTA Time Series Auto-Annotation\n"
+        )
 
         if method in ["kmeans", "spectral"] and n_clusters is None:
             raise click.UsageError(f"--n-clusters is required for {method} clustering")
@@ -92,18 +99,22 @@ def annotate(
 
         console.print(f"[cyan]Extracting embeddings using {model}...[/cyan]")
         extractor = EmbeddingExtractor(
-            model_name=model, 
+            model_name=cast(Literal["chronos-t5-tiny", "chronos-t5-small"], model),
             batch_size=batch_size,
-            context_length=context_length
+            context_length=context_length,
         )
         embeddings = extractor(series_list)
         console.print(f"[green]✓[/green] Extracted embeddings: {embeddings.shape}\n")
 
         console.print(f"[cyan]Clustering with {method}...[/cyan]")
-        clusterer = ClusteringEngine(method=method, n_clusters=n_clusters, reduce_dims=reduce_dims)
+        clusterer = ClusteringEngine(
+            method=cast(Literal["kmeans", "hdbscan", "spectral", "dbscan"], method),
+            n_clusters=n_clusters,
+            reduce_dims=reduce_dims,
+        )
         labels = clusterer.fit_predict(embeddings)
         stats = clusterer.get_cluster_stats(labels)
-        console.print(f"[green]✓[/green] Clustering complete\n")
+        console.print("[green]✓[/green] Clustering complete\n")
 
         session = InteractiveLabelingSession()
         session.display_cluster_stats(stats)
@@ -128,7 +139,7 @@ def annotate(
 
         console.print("\n[cyan]Organizing dataset...[/cyan]")
         organizer = DatasetOrganizer(output_dir)
-        metadata = organizer.organize_by_clusters(
+        organizer.organize_by_clusters(
             original_df, series_names, labels, class_names, timestamp_column=loader.timestamp_column
         )
         console.print(f"[green]✓[/green] Dataset organized in {output_dir}\n")
@@ -139,7 +150,7 @@ def annotate(
 
         if create_splits:
             console.print("[cyan]Creating train/val/test splits...[/cyan]")
-            split_info = organizer.create_split()
+            organizer.create_split()
             console.print(f"[green]✓[/green] Created splits in {output_dir / 'splits'}\n")
 
         session.show_completion_message(output_dir)
@@ -158,7 +169,7 @@ def validate(input_file: Path, timestamp_column: str):
 
     if TimeSeriesLoader.validate_timeseries_file(input_file):
         console.print(f"[green]✓ Valid file:[/green] {input_file}")
-        
+
         try:
             loader = TimeSeriesLoader(input_file, timestamp_column=timestamp_column)
             series_list, series_names, df = loader.load_timeseries()

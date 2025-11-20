@@ -1,5 +1,5 @@
 import numpy as np
-from typing import Literal, Optional, Tuple, Dict
+from typing import Literal, Optional, Dict, Union, Any
 from sklearn.cluster import KMeans, SpectralClustering, DBSCAN
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
@@ -30,8 +30,8 @@ class ClusteringEngine:
         self.target_dims = target_dims
         self.random_state = random_state
         self.scaler = StandardScaler()
-        self.dim_reducer = None
-        self.clusterer = None
+        self.dim_reducer: Optional[Union[PCA, Any]] = None
+        self.clusterer: Optional[Union[KMeans, SpectralClustering, DBSCAN, Any]] = None
 
     def _reduce_dimensionality(self, embeddings: np.ndarray) -> np.ndarray:
         if not self.reduce_dims or embeddings.shape[1] <= self.target_dims:
@@ -39,7 +39,7 @@ class ClusteringEngine:
 
         n_samples = embeddings.shape[0]
         target_dims = min(self.target_dims, n_samples - 1)
-        
+
         if target_dims < 2:
             return embeddings
 
@@ -49,14 +49,15 @@ class ClusteringEngine:
             n_neighbors = min(15, n_samples - 1)
             if n_neighbors < 2:
                 return embeddings
-            
+
             self.dim_reducer = umap.UMAP(
                 n_components=target_dims,
                 random_state=self.random_state,
                 n_neighbors=n_neighbors,
             )
 
-        return self.dim_reducer.fit_transform(embeddings)
+        reduced: np.ndarray = self.dim_reducer.fit_transform(embeddings)
+        return reduced
 
     def fit_predict(self, embeddings: np.ndarray) -> np.ndarray:
         # Validate n_clusters BEFORE any processing
@@ -66,6 +67,7 @@ class ClusteringEngine:
         embeddings_scaled = self.scaler.fit_transform(embeddings)
         embeddings_reduced = self._reduce_dimensionality(embeddings_scaled)
 
+        labels: np.ndarray
         if self.method == "kmeans":
             self.clusterer = KMeans(
                 n_clusters=self.n_clusters, random_state=self.random_state, n_init=10
@@ -108,10 +110,11 @@ class ClusteringEngine:
         k = min(5, embeddings.shape[0] - 1)
         nbrs = NearestNeighbors(n_neighbors=k).fit(embeddings)
         distances, _ = nbrs.kneighbors(embeddings)
-        distances = np.sort(distances[:, -1])
+        sorted_distances: np.ndarray = np.sort(distances[:, -1])
 
-        knee_point = int(0.95 * len(distances))
-        return distances[knee_point]
+        knee_point = int(0.95 * len(sorted_distances))
+        eps_value: float = float(sorted_distances[knee_point])
+        return eps_value
 
     def get_cluster_stats(self, labels: np.ndarray) -> Dict:
         unique_labels = np.unique(labels)

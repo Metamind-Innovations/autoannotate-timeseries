@@ -8,6 +8,8 @@ try:
 except ImportError:
     tk = None  # type: ignore[assignment]
 
+import pandas as pd
+
 from autoannotate.core.embeddings import EmbeddingExtractor
 from autoannotate.core.clustering import ClusteringEngine
 from autoannotate.core.organizer import DatasetOrganizer
@@ -26,9 +28,9 @@ class AutoAnnotateGUI:
         self.output_folder = tk.StringVar()
         self.n_clusters = tk.IntVar(value=5)
         self.model_choice = tk.StringVar(value="chronos-t5-tiny")
-        self.batch_size = tk.IntVar(value=32)
+        self.batch_size = 16
         self.context_length = tk.IntVar(value=512)
-        self.timestamp_column = tk.StringVar(value="")
+        self.timestamp_column = tk.IntVar(value=0)
 
         self.create_widgets()
 
@@ -94,31 +96,43 @@ class AutoAnnotateGUI:
         )
         model_combo.grid(row=3, column=1, sticky="w", padx=10)
 
-        tk.Label(frame, text="Batch Size:", font=("Arial", 11, "bold")).grid(
+        tk.Label(frame, text="Context Length:", font=("Arial", 11, "bold")).grid(
             row=4, column=0, sticky="w", pady=8
         )
-        tk.Spinbox(
-            frame, from_=1, to=64, textvariable=self.batch_size, width=10, font=("Arial", 10)
-        ).grid(row=4, column=1, sticky="w", padx=10)
-
-        tk.Label(frame, text="Context Length:", font=("Arial", 11, "bold")).grid(
-            row=5, column=0, sticky="w", pady=8
-        )
-        tk.Spinbox(
+        context_spinbox = tk.Spinbox(
             frame,
             from_=128,
             to=2048,
             textvariable=self.context_length,
             width=10,
             font=("Arial", 10),
-        ).grid(row=5, column=1, sticky="w", padx=10)
+        )
+        context_spinbox.grid(row=4, column=1, sticky="w", padx=10)
+        tk.Label(
+            frame,
+            text="(max time steps processed; use 512 for typical series, 1024+ for long series)",
+            font=("Arial", 9),
+            fg="gray",
+        ).grid(row=5, column=1, columnspan=2, sticky="w", padx=10, pady=(0, 8))
 
         tk.Label(frame, text="Timestamp Column (optional):", font=("Arial", 11, "bold")).grid(
             row=6, column=0, sticky="w", pady=8
         )
-        tk.Entry(frame, textvariable=self.timestamp_column, width=25, font=("Arial", 10)).grid(
-            row=6, column=1, sticky="w", padx=10
+        timestamp_spinbox = tk.Spinbox(
+            frame,
+            from_=0,
+            to=50,
+            textvariable=self.timestamp_column,
+            width=10,
+            font=("Arial", 10),
         )
+        timestamp_spinbox.grid(row=6, column=1, sticky="w", padx=10)
+        tk.Label(
+            frame,
+            text="(0-indexed column position; 0 = first column, 1 = second column, etc.)",
+            font=("Arial", 9),
+            fg="gray",
+        ).grid(row=7, column=1, columnspan=2, sticky="w", padx=10, pady=(0, 8))
 
         self.status_label = tk.Label(
             self.root, text="Ready to start", font=("Arial", 10), fg="blue"
@@ -184,10 +198,16 @@ class AutoAnnotateGUI:
 
             self.update_status("Initializing...", "blue")
 
-            ts_col = self.timestamp_column.get() if self.timestamp_column.get() else None
-
             self.update_status("Loading time series from CSV...", "blue")
-            loader = TimeSeriesLoader(Path(input_file), timestamp_column=ts_col)
+
+            temp_df = pd.read_csv(input_file, nrows=1)
+            ts_col_idx = self.timestamp_column.get()
+            ts_col_name = None
+
+            if ts_col_idx < len(temp_df.columns):
+                ts_col_name = temp_df.columns[ts_col_idx]
+
+            loader = TimeSeriesLoader(Path(input_file), timestamp_column=ts_col_name)
             series_list, series_names, original_df = loader.load_timeseries()
             self.update_status(f"✓ Loaded {len(series_list)} time series columns", "green")
 
@@ -208,7 +228,7 @@ class AutoAnnotateGUI:
             self.update_status("Extracting embeddings (this may take a while)...", "blue")
             extractor = EmbeddingExtractor(
                 model_name=self.model_choice.get(),
-                batch_size=self.batch_size.get(),
+                batch_size=self.batch_size,
                 context_length=self.context_length.get(),
             )
             embeddings = extractor(series_list)

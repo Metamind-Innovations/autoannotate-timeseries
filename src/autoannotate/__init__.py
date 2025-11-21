@@ -16,7 +16,7 @@ class AutoAnnotator:
         self,
         input_file: Path,
         output_dir: Path,
-        model: str = "chronos-t5-tiny",
+        model: str = "chronos-t5-small",
         clustering_method: str = "kmeans",
         n_clusters: Optional[int] = None,
         batch_size: int = 32,

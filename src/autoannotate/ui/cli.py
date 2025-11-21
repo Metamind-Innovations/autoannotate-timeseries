@@ -44,7 +44,7 @@ def cli():
 @click.option(
     "--model",
     type=click.Choice(["chronos-t5-tiny", "chronos-t5-small"]),
-    default="chronos-t5-tiny",
+    default="chronos-t5-small",
     help="Embedding model",
 )
 @click.option(

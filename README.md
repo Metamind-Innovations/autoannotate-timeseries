@@ -7,15 +7,19 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-AutoAnnotate-TimeSeries automatically clusters and organizes unlabeled time series datasets using cutting-edge foundation models (Chronos, Moirai, Lag-Llama). Features a **graphical user interface** for easy use and **interactive HTML preview** with Plotly charts for visual cluster inspection.
+AutoAnnotate-TimeSeries automatically clusters and organizes unlabeled time series datasets using cutting-edge
+foundation models (Chronos, Moirai, Lag-Llama). Features a **graphical user interface** for easy use and **interactive
+HTML preview** with Plotly charts for visual cluster inspection.
 
 ## ✨ Features
 
-- 🎨 **Graphical User Interface**: Easy file browser and visual controls
+- 🎨 **Graphical User Interface**: Easy file browser and visual controls via `autoannotate-ts`
 - 📈 **Interactive Plotly Charts**: View cluster samples in browser before labeling
 - 🤖 **SOTA Foundation Models**: Chronos-T5, Moirai, Lag-Llama
 - 🔬 **Multiple Clustering**: K-means, HDBSCAN, Spectral, DBSCAN
-- 📁 **Smart Organization**: One CSV per class containing all time series
+- 📁 **Smart Organization**: CSV files named after cluster names for easy identification
+- 🕐 **Flexible Timestamp Handling**: Auto-detect or specify timestamp column (GUI uses indices, CLI uses names)
+- 📂 **Clean Output**: HTML preview files saved in output folder alongside results
 - ✂️ **Auto Splits**: Train/val/test dataset splitting
 - 💾 **Export**: CSV, JSON formats
 - 📊 **Single CSV Input**: All time series in one file
@@ -23,28 +27,12 @@ AutoAnnotate-TimeSeries automatically clusters and organizes unlabeled time seri
 
 ## 🚀 Installation
 
-### Quick Install (Recommended)
 ```bash
-# Clone repository
-git clone https://github.com/Metamind-Innovations/autoannotate-timeseries.git
-cd autoannotate-timeseries
-
-# Install core package
-pip install -e .
-
-# Install Chronos model (required)
-pip install git+https://github.com/amazon-science/chronos-forecasting.git
-```
-
-### Alternative: Using requirements.txt
-```bash
-git clone https://github.com/Metamind-Innovations/autoannotate-timeseries.git
-cd autoannotate-timeseries
-pip install -r requirements.txt
-pip install -e .
+pip install autoannotate-vision
 ```
 
 ### Optional Dependencies
+
 ```bash
 # For HDBSCAN clustering
 pip install hdbscan
@@ -53,18 +41,26 @@ pip install hdbscan
 pip install -e .[dev]
 ```
 
-## ⚠️ Important Notes
+### After Installation
 
-- **Chronos model** must be installed separately from GitHub
-- Requires Git installed on your system
-- First-time installation may take 3-5 minutes
-- Requires ~500MB disk space for model weights
+Two commands are available:
+
+- `autoannotate-ts` - Launch the graphical user interface
+- `autoannotate-ts-cli` - Command-line interface for automation
+
+Check installation:
+
+```bash
+autoannotate-ts-cli --version
+autoannotate-ts-cli --help
+```
 
 ## 📝 Input Data Format
 
 ### Your CSV Structure
 
 **INPUT: One CSV file with multiple time series as columns**
+
 ```csv
 timestamp,series_1,series_2,series_3,series_4,series_5
 2024-01-01 00:00:00,10.5,20.1,15.3,18.2,22.5
@@ -75,91 +71,97 @@ timestamp,series_1,series_2,series_3,series_4,series_5
 ```
 
 **Key Points:**
-- ✅ First column can be timestamp (auto-detected or specify with `--timestamp-column`)
-- ✅ Each column = one time series to be clustered
-- ✅ Column names are preserved as series identifiers
-- ✅ Variable length series supported
-- ✅ Missing values automatically handled
 
-### Alternative Formats
+- First column can be timestamp (auto-detected or specify explicitly)
+- Each column = one time series to be clustered
+- Column names are preserved as series identifiers
+- Variable length series supported
+- Missing values automatically handled
 
-**Without timestamp:**
-```csv
-series_1,series_2,series_3
-10.5,20.1,15.3
-11.2,19.8,14.9
-9.8,21.2,15.7
-...
-```
+**Timestamp Column Handling:**
 
-**With explicit timestamp column:**
-```csv
-datetime,temperature_sensor_1,temperature_sensor_2,humidity
-2024-01-01,22.5,23.1,65.2
-2024-01-02,21.8,22.9,64.8
-...
-```
+- **Auto-detect** (recommended): Leave empty in GUI or omit `--timestamp-column` in CLI
+- **GUI**: Use column index (0 = first column, 1 = second column, etc.)
+- **CLI**: Use column name (e.g., `--timestamp-column "timestamp"`)
 
 Specify timestamp column:
+
 ```bash
-autoannotate-ts annotate data.csv output --timestamp-column "datetime" --n-clusters 5
+autoannotate-ts-cli annotate data.csv output --timestamp-column "datetime" --n-clusters 5
 ```
 
 ### Output Structure
+
 ```
 output/
 ├── increasing_trend/
-│   └── timeseries.csv          # Contains series_1, series_4 (all rows)
+│   └── increasing_trend.csv    # Contains series_1, series_4 (all rows)
 ├── decreasing_trend/
-│   └── timeseries.csv          # Contains series_2 (all rows)
+│   └── decreasing_trend.csv    # Contains series_2 (all rows)
 ├── seasonal/
-│   └── timeseries.csv          # Contains series_3, series_5 (all rows)
+│   └── seasonal.csv            # Contains series_3, series_5 (all rows)
 ├── unclustered/
-│   └── timeseries.csv          # Outliers/noise
-├── splits/
+│   └── unclustered.csv         # Outliers/noise
+├── splits/                     # Available with a CLI parameter
 │   ├── train/
 │   │   ├── increasing_trend/
-│   │   │   └── timeseries.csv
+│   │   │   └── increasing_trend.csv
 │   │   └── ...
 │   ├── val/
 │   └── test/
+├── cluster_0_preview.html      # HTML preview files (saved in output folder)
+├── cluster_1_preview.html
+├── cluster_2_preview.html
 ├── metadata.json
 └── labels.csv
 ```
 
-**Each class folder contains ONE CSV file with:**
-- Timestamp column (if present in input)
-- All time series belonging to that class
+**Key Points:**
+
+- Each class folder contains ONE CSV file **named after the class**
+- CSV file includes timestamp column and all time series belonging to that class
+- HTML preview files are saved in the output folder for reference
 
 ## 🎨 Quick Start - GUI
 
 The easiest way to use AutoAnnotate-TimeSeries:
+
 ```bash
-python run_autoannotate_gui.py
+autoannotate-ts
 ```
 
 **Workflow:**
+
 1. 📁 Select input CSV file (with multiple time series as columns)
-2. 📂 Select output folder  
+2. 📂 Select output folder
 3. 🔢 Set number of classes
-4. 🤖 Choose model (chronos-t5-tiny recommended for speed)
-5. ⚡ Configure batch size and context length
-6. 📊 Optionally specify timestamp column name
+4. 🤖 Choose model
+5. 📏 Configure context length (512 for typical series, 1024+ for long series)
+6. 📊 **[Optional]** Specify timestamp column index (e.g., 0 for first column, leave empty for auto-detect)
 7. ▶️ Click "Start Auto-Annotation"
 
-The app will cluster time series and open **interactive HTML previews** in your browser showing Plotly charts from each cluster for easy labeling!
+The app will:
+
+- Cluster your time series automatically
+- Open **interactive HTML previews** in your browser with Plotly charts for each cluster
+- Save all preview files in the output folder (not project root)
+- Prompt you to label each cluster interactively
 
 ## 💻 CLI Usage
+
+### Basic Command
+
 ```bash
-autoannotate-ts annotate /path/to/data.csv /path/to/output \
+autoannotate-ts-cli annotate /path/to/data.csv /path/to/output \
     --n-clusters 5 \
     --model chronos-t5-tiny \
     --create-splits
 ```
 
 ### Advanced CLI Options
+
 ```bash
-autoannotate-ts annotate ./data/sensors.csv ./output \
+autoannotate-ts-cli annotate ./data/sensors.csv ./output \
     --n-clusters 8 \
     --method hdbscan \
     --model chronos-t5-small \
@@ -170,7 +172,11 @@ autoannotate-ts annotate ./data/sensors.csv ./output \
     --export-format json
 ```
 
+**Note:** CLI uses column **names** for timestamp (e.g., `--timestamp-column "timestamp"`), while GUI uses column *
+*indices** (e.g., 0 for first column).
+
 ## 🐍 Python API
+
 ```python
 from autoannotate import AutoAnnotator
 from pathlib import Path
@@ -196,6 +202,7 @@ print(f"Created {result['n_clusters']} classes")
 ```
 
 ### Manual Pipeline Control
+
 ```python
 annotator.load_timeseries()
 annotator.extract_embeddings()
@@ -206,7 +213,7 @@ print(f"Found {stats['n_clusters']} clusters")
 
 class_names = {
     0: "increasing_trend",
-    1: "decreasing_trend", 
+    1: "decreasing_trend",
     2: "seasonal_pattern",
     3: "stationary"
 }
@@ -218,6 +225,7 @@ annotator.export_labels(format="json")
 ## 📊 Example: Real-World Sensor Data
 
 **Input CSV** (`sensors.csv`):
+
 ```csv
 timestamp,temp_A,temp_B,temp_C,humidity_A,humidity_B
 2024-01-01 00:00,22.5,23.1,21.8,65.2,64.8
@@ -227,83 +235,82 @@ timestamp,temp_A,temp_B,temp_C,humidity_A,humidity_B
 ```
 
 **Command:**
+
 ```bash
-autoannotate-ts annotate sensors.csv ./organized \
+autoannotate-ts-cli annotate sensors.csv ./organized \
     --n-clusters 3 \
     --timestamp-column "timestamp"
 ```
 
 **Output:**
+
 ```
 organized/
 ├── stable_temperature/
-│   └── timeseries.csv        # Contains: timestamp, temp_A, temp_C
+│   └── stable_temperature.csv        # Contains: timestamp, temp_A, temp_C
 ├── variable_temperature/
-│   └── timeseries.csv        # Contains: timestamp, temp_B
+│   └── variable_temperature.csv      # Contains: timestamp, temp_B
 ├── high_humidity/
-│   └── timeseries.csv        # Contains: timestamp, humidity_A, humidity_B
-└── metadata.json
+│   └── high_humidity.csv             # Contains: timestamp, humidity_A, humidity_B
+├── cluster_0_preview.html
+├── cluster_1_preview.html
+├── cluster_2_preview.html
+├── metadata.json
+└── labels.csv
 ```
 
 ## 🧠 Model Comparison
 
-| Model | Context | Speed | Quality | Best For |
-|-------|---------|-------|---------|----------|
-| chronos-t5-tiny | 512 | ⚡⚡⚡ | ⭐⭐⭐ | Fast inference, small datasets |
-| chronos-t5-small | 512 | ⚡⚡ | ⭐⭐⭐⭐ | Balanced (recommended) |
+| Model            | Context | Speed | Quality | Best For                       |
+|------------------|---------|-------|---------|--------------------------------|
+| chronos-t5-tiny  | 512     | ⚡⚡⚡   | ⭐⭐⭐     | Fast inference, small datasets |
+| chronos-t5-small | 512     | ⚡⚡    | ⭐⭐⭐⭐    | Balanced (recommended)         |
 
 ## 🔬 Clustering Methods
 
-| Method | Auto K | Handles Noise | Best For |
-|--------|--------|---------------|----------|
-| kmeans | ❌ | ❌ | Fast, spherical clusters |
-| hdbscan | ✅ | ✅ | Complex shapes, outliers |
-| spectral | ❌ | ❌ | Non-convex shapes |
-| dbscan | ✅ | ✅ | Density-based |
-
-## 📋 Supported Input Formats
-
-- **CSV** (`.csv`): Comma-separated values
-- **TSV** (`.tsv`): Tab-separated values  
-- **Parquet** (`.parquet`): Apache Parquet format
-
-All formats follow the same structure: one file with multiple time series as columns.
+| Method   | Auto K | Handles Noise | Best For                 |
+|----------|--------|---------------|--------------------------|
+| kmeans   | ❌      | ❌             | Fast, spherical clusters |
+| hdbscan  | ✅      | ✅             | Complex shapes, outliers |
+| spectral | ❌      | ❌             | Non-convex shapes        |
+| dbscan   | ✅      | ✅             | Density-based            |
 
 ## ✅ Quick Validation
 
 Test if your CSV file is valid:
+
 ```bash
-autoannotate-ts validate ./your_data.csv
+autoannotate-ts-cli validate ./your_data.csv
 ```
 
 This shows:
-- ✓ Number of time series columns found
-- ✓ Column names
-- ✓ Auto-detected timestamp column
+
+- Number of time series columns found
+- Column names
+- Auto-detected timestamp column (if present)
+
+With explicit timestamp column:
+
+```bash
+autoannotate-ts-cli validate ./your_data.csv --timestamp-column "timestamp"
+```
 
 ## 🔍 Pre-Push Checklist
 
 Before pushing code:
+
 ```bash
+# Format code with Black
 black src/autoannotate tests
 
+# Run tests
 pytest tests/ -v
-
-black --check src/autoannotate tests && pytest tests/ -v
 ```
-
-## 🧪 Testing
-```bash
-pytest tests/ -v --cov=autoannotate
-```
-
-## 📚 Documentation
-
-Full documentation available at: [autoannotate-timeseries.readthedocs.io](https://autoannotate-timeseries.readthedocs.io)
 
 ## 🐛 Troubleshooting
 
 ### Out of Memory?
+
 ```python
 annotator = AutoAnnotator(
     input_file=Path("./data.csv"),
@@ -315,20 +322,32 @@ annotator = AutoAnnotator(
 ```
 
 ### Too Many/Few Clusters?
+
+Try HDBSCAN for automatic cluster detection:
+
 ```bash
-autoannotate-ts annotate data.csv output --method hdbscan
+autoannotate-ts-cli annotate data.csv output --method hdbscan
 ```
 
 ### Need to specify timestamp column?
+
+**CLI (uses column name):**
+
 ```bash
-autoannotate-ts annotate data.csv output --timestamp-column "datetime" --n-clusters 5
+autoannotate-ts-cli annotate data.csv output --timestamp-column "datetime" --n-clusters 5
 ```
+
+**GUI (uses column index):**
+
+- Enter `0` for first column, `1` for second column, etc.
+- Leave empty to auto-detect
 
 ## 🔄 Data Preparation Tips
 
 ### If you have separate CSV files per time series:
 
 **Merge them first:**
+
 ```python
 import pandas as pd
 from pathlib import Path
@@ -347,6 +366,7 @@ merged_df.to_csv("combined_timeseries.csv", index=False)
 ### If you have wide format with row-based time series:
 
 **Transpose it:**
+
 ```python
 import pandas as pd
 
@@ -369,10 +389,12 @@ MIT License - see [LICENSE](LICENSE) file.
 
 ## 🙏 Acknowledgments
 
-Built with PyTorch, Transformers, scikit-learn, Plotly. Foundation models: Chronos-T5 (Amazon), Moirai (Salesforce), Lag-Llama.
+Built with PyTorch, Transformers, scikit-learn, Plotly. Foundation models: Chronos-T5 (Amazon), Moirai (Salesforce),
+Lag-Llama.
 
-**Made for the [RAIDO Project](https://raido-project.eu/)**
+**Made for the [RAIDO Project](https://raido-project.eu/), from [MetaMind Innovations](https://metamind.gr/)**
 
 ---
 
-**Sister Project**: [AutoAnnotate-Vision](https://github.com/Metamind-Innovations/autoannotate-vision) - For image classification
+**Sister Project**: [AutoAnnotate-Vision](https://github.com/Metamind-Innovations/autoannotate-vision) - For image
+classification

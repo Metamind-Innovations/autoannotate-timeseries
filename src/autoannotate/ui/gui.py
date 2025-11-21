@@ -27,7 +27,7 @@ class AutoAnnotateGUI:
         self.input_file = tk.StringVar()
         self.output_folder = tk.StringVar()
         self.n_clusters = tk.IntVar(value=5)
-        self.model_choice = tk.StringVar(value="chronos-t5-tiny")
+        self.model_choice = tk.StringVar(value="chronos-t5-small")
         self.batch_size = 16
         self.context_length = tk.IntVar(value=512)
         self.timestamp_column = tk.StringVar(value="")

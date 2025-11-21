@@ -43,7 +43,7 @@ def cli():
 )
 @click.option(
     "--model",
-    type=click.Choice(["chronos-t5-tiny", "chronos-t5-small"]),
+    type=click.Choice(["chronos-t5-tiny", "chronos-t5-small", "chronos-2"]),
     default="chronos-t5-small",
     help="Embedding model",
 )
@@ -99,7 +99,9 @@ def annotate(
 
         console.print(f"[cyan]Extracting embeddings using {model}...[/cyan]")
         extractor = EmbeddingExtractor(
-            model_name=cast(Literal["chronos-t5-tiny", "chronos-t5-small"], model),
+            model_name=cast(
+                Literal["chronos-t5-tiny", "chronos-t5-small", "chronos-2"], model
+            ),
             batch_size=batch_size,
             context_length=context_length,
         )

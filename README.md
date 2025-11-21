@@ -28,16 +28,29 @@ HTML preview** with Plotly charts for visual cluster inspection.
 ## 🚀 Installation
 
 ```bash
-pip install autoannotate-vision
+pip install autoannotate-timeseries
 ```
 
 ### Optional Dependencies
 
-```bash
-# For HDBSCAN clustering
-pip install hdbscan
+**HDBSCAN Clustering (Optional):**
 
-# For development tools
+If you want to use the HDBSCAN clustering method:
+
+```bash
+# Option 1: Install with the package
+pip install autoannotate-timeseries[hdbscan]
+
+# Option 2: Install separately before running autoannotate
+pip install hdbscan
+```
+
+**Note:** HDBSCAN is not required for the default K-means, Spectral, or DBSCAN methods. Only install it if you
+specifically need HDBSCAN clustering.
+
+**Development Tools:**
+
+```bash
 pip install -e .[dev]
 ```
 
@@ -164,13 +177,15 @@ autoannotate-ts-cli annotate /path/to/data.csv /path/to/output \
 autoannotate-ts-cli annotate ./data/sensors.csv ./output \
     --n-clusters 8 \
     --method hdbscan \
-    --model chronos-t5-small \
+    --model chronos-2 \
     --batch-size 16 \
     --context-length 512 \
     --timestamp-column "datetime" \
     --create-splits \
     --export-format json
 ```
+
+**Available models:** `chronos-t5-tiny`, `chronos-t5-small`, `chronos-2`
 
 **Note:** CLI uses column **names** for timestamp (e.g., `--timestamp-column "timestamp"`), while GUI uses column *
 *indices** (e.g., 0 for first column).
@@ -261,19 +276,27 @@ organized/
 
 ## 🧠 Model Comparison
 
-| Model            | Context | Speed | Quality | Best For                       |
-|------------------|---------|-------|---------|--------------------------------|
-| chronos-t5-tiny  | 512     | ⚡⚡⚡   | ⭐⭐⭐     | Fast inference, small datasets |
-| chronos-t5-small | 512     | ⚡⚡    | ⭐⭐⭐⭐    | Balanced (recommended)         |
+| Model            | Context   | Speed | Quality | Best For                              |
+|------------------|-----------|-------|---------|---------------------------------------|
+| chronos-t5-tiny  | 512       | ⚡⚡⚡   | ⭐⭐⭐     | Fast inference, small datasets        |
+| chronos-t5-small | 512       | ⚡⚡    | ⭐⭐⭐⭐    | Balanced (recommended)                |
+| chronos-2        | up to 8192| ⚡      | ⭐⭐⭐⭐⭐   | Best quality, long series (v2 model)  |
+
+**Important Notes:**
+- **chronos-2** is a completely new architecture (uses `Chronos2Pipeline`) with support for much longer time series (up to 8192 tokens vs 512)
+- **chronos-2** requires `chronos-forecasting>=2.0.0`
+- For most use cases, `chronos-t5-small` offers the best balance of speed and quality
 
 ## 🔬 Clustering Methods
 
-| Method   | Auto K | Handles Noise | Best For                 |
-|----------|--------|---------------|--------------------------|
-| kmeans   | ❌      | ❌             | Fast, spherical clusters |
-| hdbscan  | ✅      | ✅             | Complex shapes, outliers |
-| spectral | ❌      | ❌             | Non-convex shapes        |
-| dbscan   | ✅      | ✅             | Density-based            |
+| Method   | Auto K | Handles Noise | Best For                 | Installation                            |
+|----------|--------|---------------|--------------------------|-----------------------------------------|
+| kmeans   | ❌      | ❌             | Fast, spherical clusters | ✅ Included                              |
+| hdbscan  | ✅      | ✅             | Complex shapes, outliers | ⚠️ Optional: `pip install ...[hdbscan]` |
+| spectral | ❌      | ❌             | Non-convex shapes        | ✅ Included                              |
+| dbscan   | ✅      | ✅             | Density-based            | ✅ Included                              |
+
+**Note:** HDBSCAN requires separate installation. See [Optional Dependencies](#optional-dependencies) section.
 
 ## ✅ Quick Validation
 
@@ -328,6 +351,15 @@ Try HDBSCAN for automatic cluster detection:
 ```bash
 autoannotate-ts-cli annotate data.csv output --method hdbscan
 ```
+
+**Note:** HDBSCAN must be installed first:
+
+```bash
+pip install autoannotate-timeseries[hdbscan]
+```
+
+If you try to use HDBSCAN without installing it, you'll get an error:
+`ImportError: HDBSCAN is not installed. Install it with: pip install autoannotate-timeseries[hdbscan]`
 
 ### Need to specify timestamp column?
 

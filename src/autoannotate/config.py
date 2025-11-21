@@ -26,6 +26,12 @@ MODEL_CONFIGS = {
         "batch_size": 16,
         "context_length": 512,
     },
+    "chronos-2": {
+        "name": "amazon/chronos-2",
+        "embedding_dim": 512,
+        "batch_size": 16,
+        "context_length": 8192,  # Chronos-2 supports much longer contexts
+    },
 }
 
 

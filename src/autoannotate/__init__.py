@@ -43,7 +43,9 @@ class AutoAnnotator:
 
         self.loader = TimeSeriesLoader(self.input_file, timestamp_column=self.timestamp_column)
         self.extractor = EmbeddingExtractor(
-            model_name=cast(Literal["chronos-t5-tiny", "chronos-t5-small"], self.model_name),
+            model_name=cast(
+                Literal["chronos-t5-tiny", "chronos-t5-small", "chronos-2"], self.model_name
+            ),
             batch_size=self.batch_size,
             context_length=self.context_length,
         )

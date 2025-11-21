@@ -89,7 +89,7 @@ class AutoAnnotateGUI:
         model_combo = ttk.Combobox(
             frame,
             textvariable=self.model_choice,
-            values=["chronos-t5-tiny", "chronos-t5-small"],
+            values=["chronos-t5-tiny", "chronos-t5-small", "chronos-2"],
             state="readonly",
             width=25,
             font=("Arial", 10),

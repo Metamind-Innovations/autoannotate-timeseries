@@ -75,6 +75,11 @@ class ClusteringEngine:
             labels = self.clusterer.fit_predict(embeddings_reduced)
 
         elif self.method == "hdbscan":
+            if not HDBSCAN_AVAILABLE:
+                raise ImportError(
+                    "HDBSCAN is not installed. Install it with: "
+                    "pip install autoannotate-timeseries[hdbscan]"
+                )
             min_cluster_size = max(5, embeddings.shape[0] // 100)
             self.clusterer = hdbscan.HDBSCAN(
                 min_cluster_size=min_cluster_size,

@@ -95,7 +95,7 @@ def annotate(
         console.print(f"[cyan]Loading time series from:[/cyan] {input_file}")
         loader = TimeSeriesLoader(input_file, timestamp_column=timestamp_column)
         series_list, series_names, original_df = loader.load_timeseries()
-        console.print(f"[green]✓[/green] Loaded {len(series_list)} time series columns\n")
+        console.print(f"[green]OK[/green] Loaded {len(series_list)} time series columns\n")
 
         console.print(f"[cyan]Extracting embeddings using {model}...[/cyan]")
         extractor = EmbeddingExtractor(
@@ -104,7 +104,7 @@ def annotate(
             context_length=context_length,
         )
         embeddings = extractor(series_list)
-        console.print(f"[green]✓[/green] Extracted embeddings: {embeddings.shape}\n")
+        console.print(f"[green]OK[/green] Extracted embeddings: {embeddings.shape}\n")
 
         console.print(f"[cyan]Clustering with {method}...[/cyan]")
         clusterer = ClusteringEngine(
@@ -114,9 +114,9 @@ def annotate(
         )
         labels = clusterer.fit_predict(embeddings)
         stats = clusterer.get_cluster_stats(labels)
-        console.print("[green]✓[/green] Clustering complete\n")
+        console.print("[green]OK[/green] Clustering complete\n")
 
-        session = InteractiveLabelingSession()
+        session = InteractiveLabelingSession(output_dir)
         session.display_cluster_stats(stats)
 
         console.print("\n[cyan]Getting representative samples...[/cyan]")
@@ -124,7 +124,7 @@ def annotate(
             embeddings, labels, n_samples=n_samples
         )
         console.print(
-            f"[green]✓[/green] Found representatives for {len(representatives)} clusters\n"
+            f"[green]OK[/green] Found representatives for {len(representatives)} clusters\n"
         )
 
         class_names = session.label_all_clusters_by_names(
@@ -142,16 +142,16 @@ def annotate(
         organizer.organize_by_clusters(
             original_df, series_names, labels, class_names, timestamp_column=loader.timestamp_column
         )
-        console.print(f"[green]✓[/green] Dataset organized in {output_dir}\n")
+        console.print(f"[green]OK[/green] Dataset organized in {output_dir}\n")
 
         console.print(f"[cyan]Exporting labels to {export_format}...[/cyan]")
         labels_file = organizer.export_labels_file(format=export_format)
-        console.print(f"[green]✓[/green] Labels exported to {labels_file}\n")
+        console.print(f"[green]OK[/green] Labels exported to {labels_file}\n")
 
         if create_splits:
             console.print("[cyan]Creating train/val/test splits...[/cyan]")
             organizer.create_split()
-            console.print(f"[green]✓[/green] Created splits in {output_dir / 'splits'}\n")
+            console.print(f"[green]OK[/green] Created splits in {output_dir / 'splits'}\n")
 
         session.show_completion_message(output_dir)
 
@@ -168,17 +168,17 @@ def validate(input_file: Path, timestamp_column: str):
     console.print("[bold blue]Validating time series file...[/bold blue]\n")
 
     if TimeSeriesLoader.validate_timeseries_file(input_file):
-        console.print(f"[green]✓ Valid file:[/green] {input_file}")
+        console.print(f"[green]OK Valid file:[/green] {input_file}")
 
         try:
             loader = TimeSeriesLoader(input_file, timestamp_column=timestamp_column)
             series_list, series_names, df = loader.load_timeseries()
-            console.print(f"[green]✓ Found {len(series_names)} time series columns[/green]")
+            console.print(f"[green]OK Found {len(series_names)} time series columns[/green]")
             console.print(f"[cyan]Column names:[/cyan] {', '.join(series_names)}")
         except Exception as e:
             console.print(f"[yellow]Warning:[/yellow] {e}")
     else:
-        console.print(f"[red]✗ Invalid file:[/red] {input_file}")
+        console.print(f"[red]ERROR Invalid file:[/red] {input_file}")
 
 
 def main():

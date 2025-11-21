@@ -10,9 +10,10 @@ from autoannotate.ui.html_preview import generate_cluster_preview_html, open_htm
 
 class InteractiveLabelingSession:
 
-    def __init__(self):
+    def __init__(self, output_dir: Path = None):
         self.console = Console()
         self.class_names: Dict[int, str] = {}
+        self.output_dir = output_dir if output_dir else Path.cwd()
 
     def display_cluster_stats(self, stats: Dict):
         table = Table(title="Clustering Results", show_header=True)
@@ -59,7 +60,7 @@ class InteractiveLabelingSession:
             series_names=series_names,
             indices=representative_indices,
             cluster_size=cluster_size,
-            output_path=Path(f"cluster_{cluster_id}_preview.html"),
+            output_path=self.output_dir / f"cluster_{cluster_id}_preview.html",
         )
 
         self.console.print(f"[green]✓ Preview generated: {html_path}[/green]")

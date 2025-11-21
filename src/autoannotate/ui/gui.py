@@ -30,7 +30,7 @@ class AutoAnnotateGUI:
         self.model_choice = tk.StringVar(value="chronos-t5-tiny")
         self.batch_size = 16
         self.context_length = tk.IntVar(value=512)
-        self.timestamp_column = tk.IntVar(value=0)
+        self.timestamp_column = tk.StringVar(value="")
 
         self.create_widgets()
 
@@ -118,15 +118,13 @@ class AutoAnnotateGUI:
         tk.Label(frame, text="Timestamp Column (optional):", font=("Arial", 11, "bold")).grid(
             row=6, column=0, sticky="w", pady=8
         )
-        timestamp_spinbox = tk.Spinbox(
+        timestamp_entry = tk.Entry(
             frame,
-            from_=0,
-            to=50,
             textvariable=self.timestamp_column,
-            width=10,
+            width=12,
             font=("Arial", 10),
         )
-        timestamp_spinbox.grid(row=6, column=1, sticky="w", padx=10)
+        timestamp_entry.grid(row=6, column=1, sticky="w", padx=10)
         tk.Label(
             frame,
             text="(0-indexed column position; 0 = first column, 1 = second column, etc.)",
@@ -201,15 +199,61 @@ class AutoAnnotateGUI:
             self.update_status("Loading time series from CSV...", "blue")
 
             temp_df = pd.read_csv(input_file, nrows=1)
-            ts_col_idx = self.timestamp_column.get()
+            ts_col_str = self.timestamp_column.get().strip()
             ts_col_name = None
 
-            if ts_col_idx < len(temp_df.columns):
-                ts_col_name = temp_df.columns[ts_col_idx]
+            # If user specified a timestamp column, validate it
+            if ts_col_str:
+                try:
+                    ts_col_idx = int(ts_col_str)
 
+                    # Validate index is within bounds
+                    if ts_col_idx < 0 or ts_col_idx >= len(temp_df.columns):
+                        self.progress.stop()
+                        self.update_status("Invalid timestamp column", "red")
+                        messagebox.showerror(
+                            "Error",
+                            f"Invalid timestamp column index: {ts_col_idx}\n\n"
+                            f"The CSV file has {len(temp_df.columns)} columns (valid indices: 0-{len(temp_df.columns)-1}).\n\n"
+                            f"Please enter a valid column index, or leave empty to auto-detect.",
+                        )
+                        return
+
+                    ts_col_name = temp_df.columns[ts_col_idx]
+
+                    # Validate the column contains timestamp-like data
+                    is_numeric = pd.api.types.is_numeric_dtype(temp_df[ts_col_name])
+                    if is_numeric:
+                        self.progress.stop()
+                        self.update_status("Invalid timestamp column", "red")
+                        messagebox.showerror(
+                            "Error",
+                            f"Column '{ts_col_name}' (index {ts_col_idx}) contains numeric data, not timestamps.\n\n"
+                            f"The timestamp column should contain dates/times (e.g., '2024-03-17 23:15:00').\n\n"
+                            f"Please select a different column, or leave empty to auto-detect.",
+                        )
+                        return
+
+                    self.update_status(
+                        f"Using timestamp column: '{ts_col_name}' (index {ts_col_idx})", "blue"
+                    )
+
+                except ValueError:
+                    self.progress.stop()
+                    self.update_status("Invalid timestamp column value", "red")
+                    messagebox.showerror(
+                        "Error",
+                        f"Invalid input: '{ts_col_str}'\n\n"
+                        f"Please enter a valid column index (e.g., 0, 1, 2), or leave empty to auto-detect.",
+                    )
+                    return
+
+            # If empty, TimeSeriesLoader will auto-detect the timestamp column
             loader = TimeSeriesLoader(Path(input_file), timestamp_column=ts_col_name)
             series_list, series_names, original_df = loader.load_timeseries()
-            self.update_status(f"✓ Loaded {len(series_list)} time series columns", "green")
+
+            ts_msg = f" (excluding timestamp column '{ts_col_name}')" if ts_col_name else ""
+            self.update_status(f"✓ Loaded {len(series_list)} time series columns{ts_msg}", "green")
 
             if len(series_list) < self.n_clusters.get() * 3:
                 n_series = len(series_list)
@@ -248,7 +292,7 @@ class AutoAnnotateGUI:
             self.progress.stop()
             self.update_status("Opening HTML preview for labeling...", "orange")
 
-            session = InteractiveLabelingSession()
+            session = InteractiveLabelingSession(Path(output_dir))
             session.display_cluster_stats(stats)
 
             representatives = clusterer.get_representative_indices(embeddings, labels, n_samples=7)

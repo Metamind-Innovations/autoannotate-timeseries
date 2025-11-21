@@ -45,7 +45,7 @@ class DatasetOrganizer:
 
             cluster_df = original_df[columns_to_save]
 
-            output_file = class_dir / "timeseries.csv"
+            output_file = class_dir / f"{class_name}.csv"
             cluster_df.to_csv(output_file, index=False)
 
             organized_data["classes"][class_name] = {
@@ -66,7 +66,7 @@ class DatasetOrganizer:
                 columns_to_save.insert(0, timestamp_column)
 
             unclustered_df = original_df[columns_to_save]
-            output_file = noise_dir / "timeseries.csv"
+            output_file = noise_dir / "unclustered.csv"
             unclustered_df.to_csv(output_file, index=False)
 
             organized_data["unclustered"] = {
@@ -113,7 +113,7 @@ class DatasetOrganizer:
 
         for class_dir in class_dirs:
             class_name = class_dir.name
-            csv_file = class_dir / "timeseries.csv"
+            csv_file = class_dir / f"{class_name}.csv"
 
             if not csv_file.exists():
                 continue
@@ -155,7 +155,7 @@ class DatasetOrganizer:
                 cols_to_save = timestamp_col + selected_cols if timestamp_col else selected_cols
 
                 split_df = df[cols_to_save]
-                output_file = split_class_dir / "timeseries.csv"
+                output_file = split_class_dir / f"{class_name}.csv"
                 split_df.to_csv(output_file, index=False)
 
                 split_info[split_name][class_name] = {

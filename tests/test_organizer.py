@@ -64,7 +64,7 @@ class TestDatasetOrganizer:
         assert (output_dir / "trend_down").exists()
         assert (output_dir / "seasonal").exists()
 
-        trend_up_csv = output_dir / "trend_up" / "timeseries.csv"
+        trend_up_csv = output_dir / "trend_up" / "trend_up.csv"
         assert trend_up_csv.exists()
         df_trend_up = pd.read_csv(trend_up_csv)
         assert "timestamp" in df_trend_up.columns
@@ -81,7 +81,7 @@ class TestDatasetOrganizer:
         )
 
         assert (output_dir / "unclustered").exists()
-        unclustered_csv = output_dir / "unclustered" / "timeseries.csv"
+        unclustered_csv = output_dir / "unclustered" / "unclustered.csv"
         assert unclustered_csv.exists()
 
         df_unclustered = pd.read_csv(unclustered_csv)
@@ -95,7 +95,7 @@ class TestDatasetOrganizer:
         organizer = DatasetOrganizer(output_dir)
         organizer.organize_by_clusters(df, series_names, labels, class_names, timestamp_column=None)
 
-        trend_up_csv = output_dir / "trend_up" / "timeseries.csv"
+        trend_up_csv = output_dir / "trend_up" / "trend_up.csv"
         df_trend_up = pd.read_csv(trend_up_csv)
         assert "timestamp" not in df_trend_up.columns
         assert "series_1" in df_trend_up.columns
@@ -250,7 +250,7 @@ class TestDatasetOrganizer:
 
         organizer.create_split()
 
-        train_trend_up = output_dir / "splits" / "train" / "trend_up" / "timeseries.csv"
+        train_trend_up = output_dir / "splits" / "train" / "trend_up" / "trend_up.csv"
         if train_trend_up.exists():
             df_train = pd.read_csv(train_trend_up)
             assert "timestamp" in df_train.columns

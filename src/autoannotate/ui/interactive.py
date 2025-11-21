@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Optional
 import numpy as np
 from rich.console import Console
 from rich.table import Table
@@ -10,7 +10,7 @@ from autoannotate.ui.html_preview import generate_cluster_preview_html, open_htm
 
 class InteractiveLabelingSession:
 
-    def __init__(self, output_dir: Path = None):
+    def __init__(self, output_dir: Optional[Path] = None):
         self.console = Console()
         self.class_names: Dict[int, str] = {}
         self.output_dir = output_dir if output_dir else Path.cwd()

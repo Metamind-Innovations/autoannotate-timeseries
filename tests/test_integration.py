@@ -101,9 +101,9 @@ class TestDatasetOrganizer:
         assert (output_dir / "unclustered").exists()
         assert (output_dir / "metadata.json").exists()
 
-        assert (output_dir / "class_a" / "timeseries.csv").exists()
-        assert (output_dir / "class_b" / "timeseries.csv").exists()
-        assert (output_dir / "class_c" / "timeseries.csv").exists()
+        assert (output_dir / "class_a" / "class_a.csv").exists()
+        assert (output_dir / "class_b" / "class_b.csv").exists()
+        assert (output_dir / "class_c" / "class_c.csv").exists()
 
     def test_create_splits(self, temp_dir):
         output_dir = temp_dir / "output"

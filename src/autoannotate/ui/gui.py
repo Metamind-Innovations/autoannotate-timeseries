@@ -189,6 +189,63 @@ class AutoAnnotateGUI:
         thread.daemon = True
         thread.start()
 
+    def validate_timestamp_column(self, temp_df, ts_col_str):
+        """Validate timestamp column and return column name or None."""
+        if not ts_col_str:
+            return None
+
+        try:
+            ts_col_idx = int(ts_col_str)
+
+            # Validate index is within bounds
+            if ts_col_idx < 0 or ts_col_idx >= len(temp_df.columns):
+                self.progress.stop()
+                self.update_status("Invalid timestamp column", "red")
+                n_cols = len(temp_df.columns)
+                messagebox.showerror(
+                    "Error",
+                    f"Invalid timestamp column index: {ts_col_idx}\n\n"
+                    f"The CSV file has {n_cols} columns "
+                    f"(valid indices: 0-{n_cols - 1}).\n\n"
+                    f"Please enter a valid column index, "
+                    f"or leave empty to auto-detect.",
+                )
+                return False
+
+            ts_col_name = temp_df.columns[ts_col_idx]
+
+            # Validate the column contains timestamp-like data
+            is_numeric = pd.api.types.is_numeric_dtype(temp_df[ts_col_name])
+            if is_numeric:
+                self.progress.stop()
+                self.update_status("Invalid timestamp column", "red")
+                messagebox.showerror(
+                    "Error",
+                    f"Column '{ts_col_name}' (index {ts_col_idx}) "
+                    f"contains numeric data, not timestamps.\n\n"
+                    f"The timestamp column should contain dates/times "
+                    f"(e.g., '2024-03-17 23:15:00').\n\n"
+                    f"Please select a different column, "
+                    f"or leave empty to auto-detect.",
+                )
+                return False
+
+            self.update_status(
+                f"Using timestamp column: '{ts_col_name}' (index {ts_col_idx})", "blue"
+            )
+            return ts_col_name
+
+        except ValueError:
+            self.progress.stop()
+            self.update_status("Invalid timestamp column value", "red")
+            messagebox.showerror(
+                "Error",
+                f"Invalid input: '{ts_col_str}'\n\n"
+                f"Please enter a valid column index (e.g., 0, 1, 2), "
+                f"or leave empty to auto-detect.",
+            )
+            return False
+
     def annotation_process(self, input_file, output_dir):
         try:
             self.run_button.config(state="disabled")
@@ -200,53 +257,11 @@ class AutoAnnotateGUI:
 
             temp_df = pd.read_csv(input_file, nrows=1)
             ts_col_str = self.timestamp_column.get().strip()
-            ts_col_name = None
 
-            # If user specified a timestamp column, validate it
-            if ts_col_str:
-                try:
-                    ts_col_idx = int(ts_col_str)
-
-                    # Validate index is within bounds
-                    if ts_col_idx < 0 or ts_col_idx >= len(temp_df.columns):
-                        self.progress.stop()
-                        self.update_status("Invalid timestamp column", "red")
-                        messagebox.showerror(
-                            "Error",
-                            f"Invalid timestamp column index: {ts_col_idx}\n\n"
-                            f"The CSV file has {len(temp_df.columns)} columns (valid indices: 0-{len(temp_df.columns)-1}).\n\n"
-                            f"Please enter a valid column index, or leave empty to auto-detect.",
-                        )
-                        return
-
-                    ts_col_name = temp_df.columns[ts_col_idx]
-
-                    # Validate the column contains timestamp-like data
-                    is_numeric = pd.api.types.is_numeric_dtype(temp_df[ts_col_name])
-                    if is_numeric:
-                        self.progress.stop()
-                        self.update_status("Invalid timestamp column", "red")
-                        messagebox.showerror(
-                            "Error",
-                            f"Column '{ts_col_name}' (index {ts_col_idx}) contains numeric data, not timestamps.\n\n"
-                            f"The timestamp column should contain dates/times (e.g., '2024-03-17 23:15:00').\n\n"
-                            f"Please select a different column, or leave empty to auto-detect.",
-                        )
-                        return
-
-                    self.update_status(
-                        f"Using timestamp column: '{ts_col_name}' (index {ts_col_idx})", "blue"
-                    )
-
-                except ValueError:
-                    self.progress.stop()
-                    self.update_status("Invalid timestamp column value", "red")
-                    messagebox.showerror(
-                        "Error",
-                        f"Invalid input: '{ts_col_str}'\n\n"
-                        f"Please enter a valid column index (e.g., 0, 1, 2), or leave empty to auto-detect.",
-                    )
-                    return
+            # Validate timestamp column if specified
+            ts_col_name = self.validate_timestamp_column(temp_df, ts_col_str)
+            if ts_col_name is False:  # Validation failed
+                return
 
             # If empty, TimeSeriesLoader will auto-detect the timestamp column
             loader = TimeSeriesLoader(Path(input_file), timestamp_column=ts_col_name)

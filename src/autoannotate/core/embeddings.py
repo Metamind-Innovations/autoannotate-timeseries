@@ -77,7 +77,9 @@ class EmbeddingExtractor:
                 embeddings_list, _ = self.model.embed(series_tensor)
                 # Each tensor in list has shape (n_variates, num_patches, d_model)
                 # Stack and average across patches and variates
-                embedding = torch.stack(embeddings_list, dim=0)  # (batch, n_variates, num_patches, d_model)
+                embedding = torch.stack(
+                    embeddings_list, dim=0
+                )  # (batch, n_variates, num_patches, d_model)
                 embedding = embedding.mean(dim=(1, 2))  # Average over variates and patches
             else:
                 # Chronos-T5 models return (tensor, tokenizer_state)
@@ -111,8 +113,12 @@ class EmbeddingExtractor:
                     embeddings_list, _ = self.model.embed(batch_tensor)
                     # Each tensor in list has shape (n_variates, num_patches, d_model)
                     # Stack and average across patches and variates
-                    batch_embeddings = torch.stack(embeddings_list, dim=0)  # (batch, n_variates, num_patches, d_model)
-                    batch_embeddings = batch_embeddings.mean(dim=(1, 2))  # Average over variates and patches
+                    batch_embeddings = torch.stack(
+                        embeddings_list, dim=0
+                    )  # (batch, n_variates, num_patches, d_model)
+                    batch_embeddings = batch_embeddings.mean(
+                        dim=(1, 2)
+                    )  # Average over variates and patches
                 else:
                     # Chronos-T5 models return (tensor, tokenizer_state)
                     result = self.model.embed(batch_tensor)

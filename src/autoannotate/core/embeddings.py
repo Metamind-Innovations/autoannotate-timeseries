@@ -29,7 +29,7 @@ class EmbeddingExtractor:
             self.model = ChronosPipeline.from_pretrained(
                 "amazon/chronos-t5-tiny",
                 device_map=self.device,
-                torch_dtype=torch.float32,
+                dtype=torch.float32,
             )
         elif self.model_name == "chronos-t5-small":
             from chronos import ChronosPipeline
@@ -37,7 +37,7 @@ class EmbeddingExtractor:
             self.model = ChronosPipeline.from_pretrained(
                 "amazon/chronos-t5-small",
                 device_map=self.device,
-                torch_dtype=torch.float32,
+                dtype=torch.float32,
             )
         elif self.model_name == "chronos-2":
             from chronos import Chronos2Pipeline
@@ -45,7 +45,7 @@ class EmbeddingExtractor:
             self.model = Chronos2Pipeline.from_pretrained(
                 "amazon/chronos-2",
                 device_map=self.device,
-                torch_dtype=torch.float32,
+                dtype=torch.float32,
             )
         else:
             raise ValueError(

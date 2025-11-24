@@ -178,7 +178,6 @@ autoannotate-ts-cli annotate ./data/sensors.csv ./output \
     --n-clusters 8 \
     --method hdbscan \
     --model chronos-2 \
-    --batch-size 16 \
     --context-length 512 \
     --timestamp-column "datetime" \
     --create-splits \
@@ -189,6 +188,33 @@ autoannotate-ts-cli annotate ./data/sensors.csv ./output \
 
 **Note:** CLI uses column **names** for timestamp (e.g., `--timestamp-column "timestamp"`), while GUI uses column *
 *indices** (e.g., 0 for first column).
+
+### CLI Options Reference
+
+```bash
+autoannotate-ts-cli annotate INPUT_FILE OUTPUT_DIR [OPTIONS]
+
+Options:
+  --n-clusters, -n INTEGER        Number of clusters (required for kmeans/spectral)
+  --method, -m [kmeans|hdbscan|spectral|dbscan]
+                                  Clustering method (default: kmeans)
+  --model [chronos-t5-tiny|chronos-t5-small|chronos-2]
+                                  Embedding model (default: chronos-2)
+  --batch-size, -b INTEGER        Batch size for embedding extraction (default: 16)
+  --n-samples INTEGER             Representative samples per cluster (default: 5)
+  --context-length INTEGER        Context length for models (default: 512)
+  --timestamp-column TEXT         Timestamp column name (auto-detected if not specified)
+  --create-splits                 Create train/val/test splits
+  --export-format [csv|json]      Export labels format (default: csv)
+  --help                          Show this message and exit
+```
+
+**Technical Details:**
+
+- **Batch Size:** Default is 16 for both GUI and CLI, optimized for memory efficiency
+- **Dimensionality Reduction:** Automatically applied when dataset has more than 50 time series
+- **Context Length:** Number of time steps processed by the model (512 for typical series, up to 8192 for chrono-2 and
+  long time-series)
 
 ## 🐍 Python API
 
@@ -202,6 +228,7 @@ annotator = AutoAnnotator(
     model="chronos-t5-tiny",
     clustering_method="kmeans",
     n_clusters=5,
+    batch_size=16,
     context_length=512,
     timestamp_column="timestamp"  # Optional
 )
@@ -276,14 +303,16 @@ organized/
 
 ## 🧠 Model Comparison
 
-| Model            | Context   | Speed | Quality | Best For                              |
-|------------------|-----------|-------|---------|---------------------------------------|
-| chronos-t5-tiny  | 512       | ⚡⚡⚡   | ⭐⭐⭐     | Fast inference, small datasets        |
-| chronos-t5-small | 512       | ⚡⚡    | ⭐⭐⭐⭐    | Balanced (recommended)                |
-| chronos-2        | up to 8192| ⚡      | ⭐⭐⭐⭐⭐   | Best quality, long series (v2 model)  |
+| Model            | Context    | Speed | Quality | Best For                             |
+|------------------|------------|-------|---------|--------------------------------------|
+| chronos-t5-tiny  | 512        | ⚡⚡⚡   | ⭐⭐⭐     | Fast inference, small datasets       |
+| chronos-t5-small | 512        | ⚡⚡    | ⭐⭐⭐⭐    | Balanced (recommended)               |
+| chronos-2        | up to 8192 | ⚡     | ⭐⭐⭐⭐⭐   | Best quality, long series (v2 model) |
 
 **Important Notes:**
-- **chronos-2** is a completely new architecture (uses `Chronos2Pipeline`) with support for much longer time series (up to 8192 tokens vs 512)
+
+- **chronos-2** is a completely new architecture (uses `Chronos2Pipeline`) with support for much longer time series (up
+  to 8192 tokens vs 512)
 - **chronos-2** requires `chronos-forecasting>=2.0.0`
 - For most use cases, `chronos-t5-small` offers the best balance of speed and quality
 
@@ -334,14 +363,26 @@ pytest tests/ -v
 
 ### Out of Memory?
 
+Reduce batch size and context length for large datasets:
+
 ```python
 annotator = AutoAnnotator(
     input_file=Path("./data.csv"),
     output_dir=Path("./output"),
-    batch_size=8,
-    context_length=256,
+    batch_size=8,  # Reduce from default 16 to 8
+    context_length=256,  # Reduce from default 512 to 256
     model="chronos-t5-tiny"
 )
+```
+
+Or for CLI:
+
+```bash
+autoannotate-ts-cli annotate data.csv output \
+    --batch-size 8 \
+    --context-length 256 \
+    --model chronos-t5-tiny \
+    --n-clusters 5
 ```
 
 ### Too Many/Few Clusters?

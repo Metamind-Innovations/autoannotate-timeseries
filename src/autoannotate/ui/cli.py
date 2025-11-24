@@ -48,9 +48,8 @@ def cli():
     help="Embedding model",
 )
 @click.option(
-    "--batch-size", "-b", type=int, default=32, help="Batch size for embedding extraction"
+    "--batch-size", "-b", type=int, default=16, help="Batch size for embedding extraction"
 )
-@click.option("--reduce-dims/--no-reduce-dims", default=True, help="Apply dimensionality reduction")
 @click.option(
     "--n-samples", type=int, default=5, help="Number of representative samples per cluster"
 )
@@ -77,7 +76,6 @@ def annotate(
     method: str,
     model: str,
     batch_size: int,
-    reduce_dims: bool,
     n_samples: int,
     create_splits: bool,
     export_format: str,
@@ -107,6 +105,7 @@ def annotate(
         console.print(f"[green]OK[/green] Extracted embeddings: {embeddings.shape}\n")
 
         console.print(f"[cyan]Clustering with {method}...[/cyan]")
+        reduce_dims = len(series_list) > 50
         clusterer = ClusteringEngine(
             method=cast(Literal["kmeans", "hdbscan", "spectral", "dbscan"], method),
             n_clusters=n_clusters,

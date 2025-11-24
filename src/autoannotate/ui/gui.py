@@ -27,7 +27,7 @@ class AutoAnnotateGUI:
         self.input_file = tk.StringVar()
         self.output_folder = tk.StringVar()
         self.n_clusters = tk.IntVar(value=5)
-        self.model_choice = tk.StringVar(value="chronos-t5-small")
+        self.model_choice = tk.StringVar(value="chronos-2")
         self.batch_size = 16
         self.context_length = tk.IntVar(value=512)
         self.timestamp_column = tk.StringVar(value="")
@@ -253,6 +253,19 @@ class AutoAnnotateGUI:
 
             self.update_status("Initializing...", "blue")
 
+            # Validate number of clusters
+            n_clusters = self.n_clusters.get()
+            if n_clusters < 2:
+                self.progress.stop()
+                self.update_status("Invalid number of classes", "red")
+                messagebox.showerror(
+                    "Error",
+                    f"Invalid number of classes: {n_clusters}\n\n"
+                    f"Clustering requires at least 2 classes.\n\n"
+                    f"Please select 2 or more classes.",
+                )
+                return
+
             self.update_status("Loading time series from CSV...", "blue")
 
             temp_df = pd.read_csv(input_file, nrows=1)
@@ -270,14 +283,28 @@ class AutoAnnotateGUI:
             ts_msg = f" (excluding timestamp column '{ts_col_name}')" if ts_col_name else ""
             self.update_status(f"✓ Loaded {len(series_list)} time series columns{ts_msg}", "green")
 
-            if len(series_list) < self.n_clusters.get() * 3:
-                n_series = len(series_list)
-                n_clusters = self.n_clusters.get()
+            n_series = len(series_list)
+
+            # Error: More clusters than time series
+            if n_clusters > n_series:
+                self.progress.stop()
+                self.update_status("Invalid cluster configuration", "red")
+                messagebox.showerror(
+                    "Error",
+                    f"Cannot create {n_clusters} clusters from {n_series} time series.\n\n"
+                    f"The number of clusters cannot exceed the number of time series.\n\n"
+                    f"Please reduce the number of classes or add more time series.",
+                )
+                return
+
+            # Warning: Equal number of clusters and time series
+            if n_clusters == n_series:
                 recommended = n_clusters * 3
                 response = messagebox.askyesno(
                     "Small Dataset Warning",
                     f"You have {n_series} time series but requested {n_clusters} clusters.\n\n"
-                    f"Recommended: At least {recommended} time series for good clustering.\n\n"
+                    f"Recommended: At least {recommended} time series.\n\n"
+                    f"In general, 3 time series per cluster are needed for good clustering.\n\n"
                     f"Continue anyway?",
                 )
                 if not response:
@@ -297,7 +324,7 @@ class AutoAnnotateGUI:
             reduce_dims = len(series_list) > 50
             clusterer = ClusteringEngine(
                 method="kmeans",
-                n_clusters=self.n_clusters.get(),
+                n_clusters=n_clusters,
                 reduce_dims=reduce_dims,
             )
             labels = clusterer.fit_predict(embeddings)

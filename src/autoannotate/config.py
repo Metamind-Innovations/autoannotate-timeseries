@@ -69,7 +69,7 @@ CLUSTERING_CONFIGS = {
 
 DEFAULT_CONFIG = {
     "embedding": {
-        "model": "chronos-t5-small",
+        "model": "chronos-2",
         "batch_size": 32,
         "device": "auto",
         "context_length": 512,

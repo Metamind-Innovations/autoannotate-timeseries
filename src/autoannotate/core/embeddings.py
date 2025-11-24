@@ -9,9 +9,7 @@ class EmbeddingExtractor:
 
     def __init__(
         self,
-        model_name: Literal[
-            "chronos-t5-tiny", "chronos-t5-small", "chronos-2"
-        ] = "chronos-t5-small",
+        model_name: Literal["chronos-t5-tiny", "chronos-t5-small", "chronos-2"] = "chronos-2",
         device: Optional[str] = None,
         batch_size: int = 32,
         context_length: int = 512,

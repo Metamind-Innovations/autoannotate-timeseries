@@ -1,4 +1,4 @@
-from typing import Dict, List, Tuple
+from typing import Dict
 from pathlib import Path
 import os
 
@@ -25,6 +25,12 @@ MODEL_CONFIGS = {
         "embedding_dim": 512,
         "batch_size": 16,
         "context_length": 512,
+    },
+    "chronos-2": {
+        "name": "amazon/chronos-2",
+        "embedding_dim": 512,
+        "batch_size": 16,
+        "context_length": 8192,  # Chronos-2 supports much longer contexts
     },
 }
 
@@ -63,7 +69,7 @@ CLUSTERING_CONFIGS = {
 
 DEFAULT_CONFIG = {
     "embedding": {
-        "model": "chronos-t5-tiny",
+        "model": "chronos-2",
         "batch_size": 32,
         "device": "auto",
         "context_length": 512,

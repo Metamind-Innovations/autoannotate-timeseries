@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Optional
 import numpy as np
 from rich.console import Console
 from rich.table import Table
@@ -10,9 +10,10 @@ from autoannotate.ui.html_preview import generate_cluster_preview_html, open_htm
 
 class InteractiveLabelingSession:
 
-    def __init__(self):
+    def __init__(self, output_dir: Optional[Path] = None):
         self.console = Console()
-        self.class_names = {}
+        self.class_names: Dict[int, str] = {}
+        self.output_dir = output_dir if output_dir else Path.cwd()
 
     def display_cluster_stats(self, stats: Dict):
         table = Table(title="Clustering Results", show_header=True)
@@ -59,7 +60,7 @@ class InteractiveLabelingSession:
             series_names=series_names,
             indices=representative_indices,
             cluster_size=cluster_size,
-            output_path=Path(f"cluster_{cluster_id}_preview.html"),
+            output_path=self.output_dir / f"cluster_{cluster_id}_preview.html",
         )
 
         self.console.print(f"[green]✓ Preview generated: {html_path}[/green]")
@@ -68,7 +69,8 @@ class InteractiveLabelingSession:
         open_html_in_browser(html_path)
 
         self.console.print(
-            "[bold cyan]Review the time series in your browser, then return here to label.[/bold cyan]\n"
+            "[bold cyan]Review the time series in your browser, "
+            "then return here to label.[/bold cyan]\n"
         )
         self.console.print("[yellow]Options:[/yellow]")
         self.console.print("  1. Enter a class name for this cluster")
@@ -108,7 +110,7 @@ class InteractiveLabelingSession:
         labels: np.ndarray,
         representative_indices: Dict[int, np.ndarray],
         cluster_stats: Dict,
-    ):
+    ) -> Dict[int, str]:
         self.console.print("\n[bold blue]Starting Interactive Labeling Session[/bold blue]\n")
 
         sorted_clusters = sorted(
@@ -120,7 +122,11 @@ class InteractiveLabelingSession:
                 continue
 
             class_name = self.get_class_name_for_cluster(
-                cluster_id, timeseries_list, series_names, representative_indices[cluster_id], cluster_size
+                cluster_id,
+                timeseries_list,
+                series_names,
+                representative_indices[cluster_id],
+                cluster_size,
             )
 
             if class_name:
@@ -159,9 +165,8 @@ class InteractiveLabelingSession:
         total_timeseries = len(labels)
         coverage = (total_labeled / total_timeseries) * 100 if total_timeseries > 0 else 0
 
-        self.console.print(
-            f"\n[bold]Coverage:[/bold] {coverage:.1f}% ({total_labeled}/{total_timeseries} time series)"
-        )
+        coverage_text = f"{coverage:.1f}% ({total_labeled}/{total_timeseries} time series)"
+        self.console.print(f"\n[bold]Coverage:[/bold] {coverage_text}")
 
     def show_completion_message(self, output_dir: Path):
         self.console.print("\n" + "=" * 60)

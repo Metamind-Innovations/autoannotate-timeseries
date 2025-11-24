@@ -3,10 +3,10 @@ from autoannotate import AutoAnnotator
 
 
 def main():
-    
+
     input_csv_file = Path("./data/timeseries_data.csv")
     output_directory = Path("./data/annotated_timeseries")
-    
+
     annotator = AutoAnnotator(
         input_file=input_csv_file,
         output_dir=output_directory,
@@ -16,15 +16,11 @@ def main():
         batch_size=32,
         reduce_dims=True,
         context_length=512,
-        timestamp_column="timestamp"
+        timestamp_column="timestamp",
     )
-    
-    result = annotator.run_full_pipeline(
-        n_samples=5,
-        create_splits=True,
-        export_format="csv"
-    )
-    
+
+    result = annotator.run_full_pipeline(n_samples=5, create_splits=True, export_format="csv")
+
     print(f"\n{'='*60}")
     print(f"Annotation Complete!")
     print(f"{'='*60}")

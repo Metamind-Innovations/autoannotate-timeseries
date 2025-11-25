@@ -15,7 +15,7 @@ cluster inspection, and a **CLI tool**.
 
 - 🎨 **Graphical User Interface**: Easy file browser and visual controls via `autoannotate-ts`
 - 📈 **Interactive Plotly Charts**: View cluster samples in browser before labeling
-- 🤖 **SOTA Foundation Models**: Chronos-T5, Moirai, Lag-Llama
+- 🤖 **SOTA Foundation Models**: Chronos-T5, Chronos-2
 - 🔬 **Multiple Clustering**: K-means, HDBSCAN, Spectral, DBSCAN
 - 📁 **Smart Organization**: CSV files named after cluster names for easy identification
 - 🕐 **Flexible Timestamp Handling**: Auto-detect or specify timestamp column (GUI uses indices, CLI uses names)

@@ -7,9 +7,9 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-AutoAnnotate-TimeSeries automatically clusters and organizes unlabeled time series datasets using cutting-edge
-foundation models (Chronos, Moirai, Lag-Llama). Features a **graphical user interface** for easy use and **interactive
-HTML preview** with Plotly charts for visual cluster inspection.
+AutoAnnotate-TimeSeries automatically clusters and organizes unlabeled time series datasets using cutting-edge **Chronos
+** foundation models by Amazon. It features a **GUI** and **interactive HTML preview** with Plotly charts for visual
+cluster inspection, and a **CLI tool**.
 
 ## ✨ Features
 

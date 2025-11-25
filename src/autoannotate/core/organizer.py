@@ -55,7 +55,11 @@ class DatasetOrganizer:
             }
 
         unclustered_mask = labels == -1
-        unclustered_series = [name for name, mask in zip(series_names, unclustered_mask) if mask]
+        unlabeled_mask = np.array([label not in class_names and label != -1 for label in labels])
+        combined_unclustered_mask = unclustered_mask | unlabeled_mask
+        unclustered_series = [
+            name for name, mask in zip(series_names, combined_unclustered_mask) if mask
+        ]
 
         if unclustered_series:
             noise_dir = self.output_dir / "unclustered"

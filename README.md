@@ -7,9 +7,9 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-AutoAnnotate-TimeSeries automatically clusters and organizes unlabeled time series datasets using cutting-edge
+**AutoAnnotate-TimeSeries** automatically clusters and organizes unlabeled time series datasets using cutting-edge
 **Chronos** foundation models by Amazon. It features a **GUI** and **interactive HTML preview** with Plotly charts for
-visual cluster inspection, and a **CLI tool**.
+visual cluster inspection, as well as **CLI tool**.
 
 ## ✨ Features
 
@@ -313,14 +313,16 @@ organized/
 
 - **chronos-2** is a completely new architecture (uses `Chronos2Pipeline`) with support for much longer time series (up
   to 8192 tokens vs 512)
-- **chronos-2** requires `chronos-forecasting>=2.0.0`
+- **chronos-2** requires `chronos-forecasting>=2.0.0` (Already installed with `pip install autoannotate-timeseries`)
 - For most use cases, `chronos-t5-small` offers the best balance of speed and quality
 
 ## 🔬 Clustering Methods
 
+The following methods can be specified when running `autoannotate-ts-cli annotate` through the `--method` argument
+
 | Method   | Auto K | Handles Noise | Best For                 | Installation                            |
 |----------|--------|---------------|--------------------------|-----------------------------------------|
-| kmeans   | ❌      | ❌             | Fast, spherical clusters | ✅ Included                              |
+| kmeans   | ❌      | ❌             | Fast, spherical clusters | ✅ Included (Default method used in GUI) |
 | hdbscan  | ✅      | ✅             | Complex shapes, outliers | ⚠️ Optional: `pip install ...[hdbscan]` |
 | spectral | ❌      | ❌             | Non-convex shapes        | ✅ Included                              |
 | dbscan   | ✅      | ✅             | Density-based            | ✅ Included                              |
@@ -345,18 +347,6 @@ With explicit timestamp column:
 
 ```bash
 autoannotate-ts-cli validate ./your_data.csv --timestamp-column "timestamp"
-```
-
-## 🔍 Pre-Push Checklist
-
-Before pushing code:
-
-```bash
-# Format code with Black
-black src/autoannotate tests
-
-# Run tests
-pytest tests/ -v
 ```
 
 ## 🐛 Troubleshooting
@@ -452,13 +442,14 @@ df_transposed.to_csv("column_format.csv")
 
 1. Fork the repository
 2. Create feature branch
-3. **Format with Black**: `black src/autoannotate tests`
-4. **Run tests**: `pytest tests/ -v`
-5. Push and create PR
+3. All actions
+   from [tests.yml](https://github.com/Metamind-Innovations/autoannotate-timeseries/blob/main/.github/workflows/tests.yml)
+   should pass.
+4. Push and create PR
 
 ## 📄 License
 
-MIT License - see [LICENSE](LICENSE) file.
+MIT License - see [LICENSE](https://github.com/Metamind-Innovations/autoannotate-timeseries/blob/main/LICENSE) file.
 
 ## 🙏 Acknowledgments
 

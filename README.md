@@ -462,12 +462,11 @@ MIT License - see [LICENSE](LICENSE) file.
 
 ## 🙏 Acknowledgments
 
-Built with PyTorch, Transformers, scikit-learn, Plotly. Foundation models: Chronos-T5 (Amazon), Moirai (Salesforce),
-Lag-Llama.
+Built with `PyTorch`, `scikit-learn`, `pandas`, `numpy` and more. Foundation models: Chronos-T5 and Chronos-2 (Amazon)
 
 **Made for the [RAIDO Project](https://raido-project.eu/), from [MetaMind Innovations](https://metamind.gr/)**
 
 ---
 
 **Sister Project**: [AutoAnnotate-Vision](https://github.com/Metamind-Innovations/autoannotate-vision) - For image
-classification
+auto-annotation

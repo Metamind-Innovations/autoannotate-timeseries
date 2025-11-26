@@ -61,7 +61,7 @@ TimeSeriesLoader(
 ```
 
 **Parameters**:
-- `input_file`: Path to CSV/TSV/Parquet file
+- `input_file`: Path to CSV/TSV file
 - `timestamp_column`: Name of timestamp column (auto-detected if None)
 
 ### Methods

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "autoannotate-timeseries"
-version = "0.0.1"
+version = "0.1.6"
 description = "SOTA unsupervised auto-annotation SDK for time series classification"
 readme = "README.md"
 requires-python = ">=3.10, <3.14"
@@ -43,7 +43,6 @@ dependencies = [
     "click>=8.0.0",
     "tqdm>=4.67.0",
     "rich>=14.0.0",
-    "pyarrow>=19.0.0",
     "plotly>=5.0.0",
     "chronos-forecasting>=2.0.0"
 ]

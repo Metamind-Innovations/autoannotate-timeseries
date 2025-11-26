@@ -6,7 +6,6 @@ import os
 SUPPORTED_TS_FORMATS = {
     ".csv",
     ".tsv",
-    ".parquet",
     ".npy",
     ".npz",
     ".txt",

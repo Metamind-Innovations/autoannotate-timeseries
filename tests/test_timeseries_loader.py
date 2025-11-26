@@ -159,23 +159,6 @@ class TestTimeSeriesLoader:
         assert len(series_list) == 1
         assert series_names == ["values"]
 
-    def test_parquet_file(self, tmp_path):
-        data = {
-            "timestamp": pd.date_range("2024-01-01", periods=100, freq="h"),
-            "sensor_1": np.random.randn(100),
-            "sensor_2": np.random.randn(100),
-        }
-        df = pd.DataFrame(data)
-        parquet_path = tmp_path / "data.parquet"
-        df.to_parquet(parquet_path, index=False)
-
-        loader = TimeSeriesLoader(parquet_path)
-        series_list, series_names, _df_loaded = loader.load_timeseries()
-
-        assert len(series_list) == 2
-        assert "sensor_1" in series_names
-        assert "sensor_2" in series_names
-
     def test_timestamp_column_not_found(self, temp_csv_file):
         with pytest.raises(ValueError, match="Timestamp column"):
             loader = TimeSeriesLoader(temp_csv_file, timestamp_column="nonexistent")

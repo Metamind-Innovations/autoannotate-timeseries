@@ -62,9 +62,6 @@ def validate_timeseries_file(file_path: Union[str, Path]) -> bool:
         if suffix in [".csv", ".tsv"]:
             df = pd.read_csv(path, nrows=5)
             return len(df) > 0 and len(df.columns) >= 1
-        elif suffix == ".parquet":
-            df = pd.read_parquet(path)
-            return len(df) > 0 and len(df.columns) >= 1
         return False
     except Exception:
         return False

@@ -161,7 +161,6 @@ class AutoAnnotateGUI:
             filetypes=[
                 ("CSV files", "*.csv"),
                 ("TSV files", "*.tsv"),
-                ("Parquet files", "*.parquet"),
                 ("All files", "*.*"),
             ],
         )

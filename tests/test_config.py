@@ -22,7 +22,6 @@ class TestConstants:
         assert isinstance(SUPPORTED_TS_FORMATS, set)
         assert ".csv" in SUPPORTED_TS_FORMATS
         assert ".tsv" in SUPPORTED_TS_FORMATS
-        assert ".parquet" in SUPPORTED_TS_FORMATS
 
     def test_model_configs_structure(self):
         assert isinstance(MODEL_CONFIGS, dict)
